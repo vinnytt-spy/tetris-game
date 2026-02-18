@@ -2,1138 +2,572 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Animal Hopper</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #87CEEB 0%, #98D8C8 100%);
-            font-family: 'Arial Black', Arial, sans-serif;
-            overflow: hidden;
-            touch-action: none;
-        }
-        
-        #startScreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.95);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            overflow-y: auto;
-        }
-        
-        #startScreen.hidden {
-            display: none;
-        }
-        
-        .startContent {
-            background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
-            padding: 30px;
-            border-radius: 20px;
-            text-align: center;
-            color: #FFE4B5;
-            border: 4px solid #FFE4B5;
-            max-width: 500px;
-            width: 90%;
-            margin: 20px;
-        }
-        
-        .startContent h1 {
-            font-size: 32px;
-            margin-bottom: 25px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        }
-        
-        .startContent h2 {
-            font-size: 20px;
-            margin: 20px 0 15px 0;
-            color: #FFD700;
-        }
-        
-        .animalGrid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 25px;
-        }
-        
-        .animalCard {
-            background: rgba(255, 228, 181, 0.2);
-            border: 3px solid #FFE4B5;
-            border-radius: 12px;
-            padding: 12px 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .animalCard:active {
-            transform: scale(0.95);
-        }
-        
-        .animalCard.selected {
-            background: #FFD700;
-            border-color: #FFA500;
-            color: #8B4513;
-            transform: scale(1.05);
-        }
-        
-        .animalCard .emoji {
-            font-size: 40px;
-            margin-bottom: 8px;
-        }
-        
-        .animalCard .name {
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 4px;
-        }
-        
-        .animalCard .ability {
-            font-size: 11px;
-            font-style: italic;
-            line-height: 1.3;
-        }
-        
-        .difficultyGrid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            margin-bottom: 25px;
-        }
-        
-        .difficultyBtn {
-            background: rgba(255, 228, 181, 0.2);
-            border: 3px solid #FFE4B5;
-            border-radius: 10px;
-            padding: 12px 8px;
-            color: #FFE4B5;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .difficultyBtn:active {
-            transform: scale(0.95);
-        }
-        
-        .difficultyBtn.selected {
-            background: #FFD700;
-            border-color: #FFA500;
-            color: #8B4513;
-            transform: scale(1.05);
-        }
-        
-        .difficultyBtn .label {
-            font-size: 16px;
-            margin-bottom: 4px;
-        }
-        
-        .difficultyBtn .desc {
-            font-size: 10px;
-            opacity: 0.8;
-        }
-        
-        #playBtn {
-            background: #FFE4B5;
-            color: #8B4513;
-            border: none;
-            padding: 15px 45px;
-            font-size: 22px;
-            font-weight: bold;
-            border-radius: 10px;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            margin-top: 10px;
-        }
-        
-        #playBtn:active {
-            transform: scale(0.95);
-        }
-        
-        #playBtn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        #gameContainer {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 10px;
-        }
-        
-        #scoreBoard {
-            background: rgba(139, 69, 19, 0.9);
-            color: #FFE4B5;
-            padding: 12px 20px;
-            border-radius: 15px;
-            margin-bottom: 12px;
-            text-align: center;
-            font-size: 16px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            width: 90%;
-            max-width: 400px;
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
-        }
-        
-        .stat {
-            margin: 4px 8px;
-        }
-        
-        canvas {
-            background: #228B22;
-            border: 4px solid #8B4513;
-            border-radius: 10px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-            max-width: 100%;
-            height: auto;
-            touch-action: none;
-        }
-        
-        #controls {
-            display: grid;
-            grid-template-columns: repeat(3, 70px);
-            grid-template-rows: repeat(3, 70px);
-            gap: 8px;
-            margin-top: 15px;
-        }
-        
-        .control-btn {
-            background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
-            border: 3px solid #FFE4B5;
-            border-radius: 12px;
-            color: #FFE4B5;
-            font-size: 24px;
-            font-weight: bold;
-            cursor: pointer;
-            user-select: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            transition: all 0.1s;
-        }
-        
-        .control-btn:active {
-            transform: scale(0.95);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-        }
-        
-        #upBtn { grid-column: 2; grid-row: 1; }
-        #leftBtn { grid-column: 1; grid-row: 2; }
-        #rightBtn { grid-column: 3; grid-row: 2; }
-        #downBtn { grid-column: 2; grid-row: 3; }
-        #sprintBtn { 
-            grid-column: 2; 
-            grid-row: 2; 
-            background: linear-gradient(135deg, #FF6B6B 0%, #C92A2A 100%);
-            font-size: 18px;
-        }
-        
-        #gameOver {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.9);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-        
-        #gameOver.show {
-            display: flex;
-        }
-        
-        .gameOverContent {
-            background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
-            padding: 35px;
-            border-radius: 20px;
-            text-align: center;
-            color: #FFE4B5;
-            border: 4px solid #FFE4B5;
-        }
-        
-        .gameOverContent h2 {
-            font-size: 32px;
-            margin-bottom: 18px;
-        }
-        
-        .gameOverContent p {
-            font-size: 20px;
-            margin-bottom: 25px;
-        }
-        
-        #restartBtn {
-            background: #FFE4B5;
-            color: #8B4513;
-            border: none;
-            padding: 12px 35px;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 10px;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-        
-        #restartBtn:active {
-            transform: scale(0.95);
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tetris + Dr. Mario Game</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
-    <!-- Start Screen -->
-    <div id="startScreen">
-        <div class="startContent">
-            <h1>🌲 ANIMAL HOPPER 🌲</h1>
-            
-            <h2>Choose Your Animal</h2>
-            <div class="animalGrid">
-                <div class="animalCard" data-animal="rabbit">
-                    <div class="emoji">🐰</div>
-                    <div class="name">Rabbit</div>
-                    <div class="ability">Balanced & Quick</div>
-                </div>
-                <div class="animalCard" data-animal="deer">
-                    <div class="emoji">🦌</div>
-                    <div class="name">Deer</div>
-                    <div class="ability">Super Fast Sprint</div>
-                </div>
-                <div class="animalCard" data-animal="coyote">
-                    <div class="emoji">🐺</div>
-                    <div class="name">Coyote</div>
-                    <div class="ability">Extra Lives</div>
-                </div>
-            </div>
-            
-            <h2>Select Difficulty</h2>
-            <div class="difficultyGrid">
-                <div class="difficultyBtn" data-difficulty="easy">
-                    <div class="label">🟢 EASY</div>
-                    <div class="desc">Slow traffic</div>
-                </div>
-                <div class="difficultyBtn" data-difficulty="medium">
-                    <div class="label">🟡 MEDIUM</div>
-                    <div class="desc">Normal speed</div>
-                </div>
-                <div class="difficultyBtn" data-difficulty="hard">
-                    <div class="label">🔴 HARD</div>
-                    <div class="desc">Fast chaos!</div>
-                </div>
-            </div>
-            
-            <button id="playBtn" disabled>START HOPPING!</button>
-        </div>
-    </div>
+    <div id="root"></div>
     
-    <!-- Game Screen -->
-    <div id="gameContainer">
-        <div id="scoreBoard">
-            <div class="stat" id="score">SCORE: 0</div>
-            <div class="stat" id="lives">LIVES: ❤️❤️❤️</div>
-            <div class="stat" id="level">LEVEL: 1</div>
-            <div class="stat" id="animalDisplay"></div>
-        </div>
-        
-        <canvas id="gameCanvas" width="400" height="600"></canvas>
-        
-        <div id="controls">
-            <button class="control-btn" id="upBtn">▲</button>
-            <button class="control-btn" id="leftBtn">◄</button>
-            <button class="control-btn" id="sprintBtn">⚡</button>
-            <button class="control-btn" id="rightBtn">►</button>
-            <button class="control-btn" id="downBtn">▼</button>
-        </div>
-    </div>
-    
-    <!-- Game Over Screen -->
-    <div id="gameOver">
-        <div class="gameOverContent">
-            <h2>GAME OVER!</h2>
-            <p>Final Score: <span id="finalScore">0</span></p>
-            <p>Level Reached: <span id="finalLevel">1</span></p>
-            <button id="restartBtn">HOP AGAIN!</button>
-        </div>
-    </div>
-    
-    <script>
-        // Game variables
-        let selectedAnimal = null;
-        let selectedDifficulty = null;
-        let difficultyMultiplier = 1;
-        
-        // Animal stats
-        const animalStats = {
-            rabbit: {
-                emoji: '🐰',
-                lives: 3,
-                sprint: 1.5,
-                name: 'Rabbit'
-            },
-            deer: {
-                emoji: '🦌',
-                lives: 3,
-                sprint: 2.5, // Super fast
-                name: 'Deer'
-            },
-            coyote: {
-                emoji: '🐺',
-                lives: 5, // Extra lives
-                sprint: 1.3,
-                name: 'Coyote'
-            }
-        };
-        
-        // Difficulty settings
-        const difficultySettings = {
-            easy: 0.7,
-            medium: 1.0,
-            hard: 1.5
-        };
-        
-        // Start screen selection
-        document.querySelectorAll('.animalCard').forEach(card => {
-            card.addEventListener('click', function() {
-                document.querySelectorAll('.animalCard').forEach(c => c.classList.remove('selected'));
-                this.classList.add('selected');
-                selectedAnimal = this.dataset.animal;
-                checkCanStart();
-            });
-        });
-        
-        document.querySelectorAll('.difficultyBtn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.difficultyBtn').forEach(b => b.classList.remove('selected'));
-                this.classList.add('selected');
-                selectedDifficulty = this.dataset.difficulty;
-                difficultyMultiplier = difficultySettings[selectedDifficulty];
-                checkCanStart();
-            });
-        });
-        
-        function checkCanStart() {
-            const playBtn = document.getElementById('playBtn');
-            if (selectedAnimal && selectedDifficulty) {
-                playBtn.disabled = false;
-            }
-        }
-        
-        document.getElementById('playBtn').addEventListener('click', startGame);
-        
-        function startGame() {
-            document.getElementById('startScreen').classList.add('hidden');
-            initializeGame();
-        }
-        
-        // Game code
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const gridSize = 40;
-        const rows = canvas.height / gridSize;
-        const cols = canvas.width / gridSize;
-        
-        let score = 0;
-        let lives = 3;
-        let level = 1;
-        let gameRunning = false;
-        let sprintActive = false;
-        let sprintCooldown = 0;
-        
-        let animal = { x: 4, y: 14, size: 30, direction: 'up', crouching: false };
-        let cars = [];
-        let logs = [];
-        let goals = [];
-        
-        const lanes = [
-            { type: 'safe', y: 14 },
-            { type: 'road', y: 13 },
-            { type: 'road', y: 12 },
-            { type: 'road', y: 11 },
-            { type: 'safe', y: 10 },
-            { type: 'road', y: 9 },
-            { type: 'road', y: 8 },
-            { type: 'road', y: 7 },
-            { type: 'safe', y: 6 },
-            { type: 'water', y: 5 },
-            { type: 'water', y: 4 },
-            { type: 'water', y: 3 },
-            { type: 'water', y: 2 },
-            { type: 'safe', y: 1 },
-            { type: 'goal', y: 0 }
-        ];
-        
-        function initializeGame() {
-            const stats = animalStats[selectedAnimal];
-            lives = stats.lives;
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        function TetrisMarioGame() {
+          const canvasRef = useRef(null);
+          const [gameStarted, setGameStarted] = useState(false);
+          const [gameOver, setGameOver] = useState(false);
+          const [score, setScore] = useState(0);
+          const [level, setLevel] = useState(1);
+          const [combo, setCombo] = useState(0);
+
+          const COLS = 10;
+          const ROWS = 20;
+          const BLOCK_SIZE = 25;
+
+          const SHAPES = {
+            I: [[1,1,1,1]],
+            O: [[1,1],[1,1]],
+            T: [[0,1,0],[1,1,1]],
+            S: [[0,1,1],[1,1,0]],
+            Z: [[1,1,0],[0,1,1]],
+            J: [[1,0,0],[1,1,1]],
+            L: [[0,0,1],[1,1,1]]
+          };
+
+          const COLORS = ['#f00', '#0f0', '#00f', '#ff0', '#f0f', '#0ff'];
+
+          const gameState = useRef({
+            board: Array(ROWS).fill(null).map(() => Array(COLS).fill(null)),
+            currentPiece: null,
+            currentX: 0,
+            currentY: 0,
+            pieceColors: null,
+            dropCounter: 0,
+            dropInterval: 1000,
+            lastTime: 0,
+            virusCount: 0,
+            animationId: null
+          });
+
+          const createPiece = () => {
+            const pieces = Object.keys(SHAPES);
+            const piece = pieces[Math.floor(Math.random() * pieces.length)];
+            const shape = SHAPES[piece];
             
-            document.getElementById('animalDisplay').textContent = stats.emoji + ' ' + stats.name;
-            updateLives();
+            const colors = shape.map(row => 
+              row.map(cell => cell ? COLORS[Math.floor(Math.random() * COLORS.length)] : null)
+            );
             
-            goals = [
-                { x: 1, reached: false },
-                { x: 3, reached: false },
-                { x: 5, reached: false },
-                { x: 7, reached: false },
-                { x: 9, reached: false }
-            ];
-            
-            gameRunning = true;
-            initLevel();
-            gameLoop();
-        }
-        
-        function initLevel() {
-            cars = [];
-            logs = [];
-            
-            const speed = (0.5 + (level * 0.2)) * difficultyMultiplier;
-            
-            // Cars
-            for (let i = 0; i < 3; i++) {
-                cars.push({ x: i * 4, y: 13, width: 1.5, speed: speed, color: '#FF0000' });
-            }
-            for (let i = 0; i < 3; i++) {
-                cars.push({ x: i * 4, y: 12, width: 1.5, speed: -speed * 1.2, color: '#0000FF' });
-            }
-            for (let i = 0; i < 4; i++) {
-                cars.push({ x: i * 3, y: 11, width: 1.2, speed: speed * 1.5, color: '#FFFF00' });
-            }
-            for (let i = 0; i < 3; i++) {
-                cars.push({ x: i * 4, y: 9, width: 1.5, speed: -speed, color: '#FF00FF' });
-            }
-            for (let i = 0; i < 3; i++) {
-                cars.push({ x: i * 4.5, y: 8, width: 1.5, speed: speed * 1.1, color: '#00FFFF' });
-            }
-            for (let i = 0; i < 4; i++) {
-                cars.push({ x: i * 3, y: 7, width: 1.2, speed: -speed * 1.4, color: '#FFA500' });
-            }
-            
-            // Logs
-            for (let i = 0; i < 3; i++) {
-                logs.push({ x: i * 4, y: 5, width: 2.5, speed: speed * 0.8 });
-            }
-            for (let i = 0; i < 2; i++) {
-                logs.push({ x: i * 5, y: 4, width: 3, speed: -speed * 0.7 });
-            }
-            for (let i = 0; i < 3; i++) {
-                logs.push({ x: i * 4, y: 3, width: 2, speed: speed * 1.2 });
-            }
-            for (let i = 0; i < 2; i++) {
-                logs.push({ x: i * 5, y: 2, width: 3.5, speed: -speed * 0.6 });
-            }
-        }
-        
-        function drawBackground() {
-            lanes.forEach(lane => {
-                let color;
-                switch(lane.type) {
-                    case 'safe': color = '#228B22'; break;
-                    case 'road': color = '#404040'; break;
-                    case 'water': color = '#1E90FF'; break;
-                    case 'goal': color = '#32CD32'; break;
+            return { shape, colors };
+          };
+
+          const rotate = (matrix) => {
+            return matrix[0].map((_, i) => 
+              matrix.map(row => row[i]).reverse()
+            );
+          };
+
+          const checkCollision = (state, piece, x, y) => {
+            for (let row = 0; row < piece.length; row++) {
+              for (let col = 0; col < piece[row].length; col++) {
+                if (piece[row][col]) {
+                  const newY = y + row;
+                  const newX = x + col;
+                  
+                  if (newX < 0 || newX >= COLS || newY >= ROWS) {
+                    return true;
+                  }
+                  if (newY >= 0 && state.board[newY][newX]) {
+                    return true;
+                  }
                 }
-                ctx.fillStyle = color;
-                ctx.fillRect(0, lane.y * gridSize, canvas.width, gridSize);
-                
-                if (lane.type === 'road') {
-                    ctx.strokeStyle = '#FFFF00';
-                    ctx.lineWidth = 2;
-                    ctx.setLineDash([10, 10]);
-                    ctx.beginPath();
-                    ctx.moveTo(0, lane.y * gridSize + gridSize / 2);
-                    ctx.lineTo(canvas.width, lane.y * gridSize + gridSize / 2);
-                    ctx.stroke();
-                    ctx.setLineDash([]);
+              }
+            }
+            return false;
+          };
+
+          const mergePiece = (state) => {
+            const piece = state.currentPiece;
+            const colors = state.pieceColors;
+            
+            for (let row = 0; row < piece.length; row++) {
+              for (let col = 0; col < piece[row].length; col++) {
+                if (piece[row][col]) {
+                  const y = state.currentY + row;
+                  const x = state.currentX + col;
+                  if (y >= 0) {
+                    state.board[y][x] = colors[row][col];
+                  }
                 }
-            });
-        }
-        
-        function drawAnimal() {
-            const x = animal.x * gridSize + gridSize / 2;
-            const y = animal.y * gridSize + gridSize / 2;
-            const size = animal.size / 2;
+              }
+            }
+          };
+
+          const findMatches = (state) => {
+            const matches = new Set();
             
-            ctx.save();
-            ctx.translate(x, y);
-            
-            // Rotate based on direction
-            switch(animal.direction) {
-                case 'up': ctx.rotate(0); break;
-                case 'down': ctx.rotate(Math.PI); break;
-                case 'left': ctx.rotate(-Math.PI/2); break;
-                case 'right': ctx.rotate(Math.PI/2); break;
+            for (let row = 0; row < ROWS; row++) {
+              let count = 1;
+              let color = state.board[row][0];
+              
+              for (let col = 1; col < COLS; col++) {
+                if (state.board[row][col] === color && color !== null) {
+                  count++;
+                  if (count >= 4) {
+                    for (let i = 0; i < count; i++) {
+                      matches.add(`${row}-${col - i}`);
+                    }
+                  }
+                } else {
+                  count = 1;
+                  color = state.board[row][col];
+                }
+              }
             }
             
-            // Crouch effect
-            const crouchOffset = animal.crouching ? 3 : 0;
+            for (let col = 0; col < COLS; col++) {
+              let count = 1;
+              let color = state.board[0][col];
+              
+              for (let row = 1; row < ROWS; row++) {
+                if (state.board[row][col] === color && color !== null) {
+                  count++;
+                  if (count >= 4) {
+                    for (let i = 0; i < count; i++) {
+                      matches.add(`${row - i}-${col}`);
+                    }
+                  }
+                } else {
+                  count = 1;
+                  color = state.board[row][col];
+                }
+              }
+            }
             
-            if (selectedAnimal === 'rabbit') {
-                // Rabbit body - very compact and round
-                ctx.fillStyle = '#D3D3D3';
-                ctx.beginPath();
-                ctx.ellipse(0, crouchOffset, size * 0.55, size * 0.25, 0, 0, Math.PI * 2);
-                ctx.fill();
+            return matches;
+          };
+
+          const clearMatches = (state) => {
+            const matches = findMatches(state);
+            
+            if (matches.size > 0) {
+              matches.forEach(coord => {
+                const [row, col] = coord.split('-').map(Number);
+                state.board[row][col] = null;
+              });
+              
+              applyGravity(state);
+              
+              const points = matches.size * 50 * (combo + 1);
+              setScore(s => s + points);
+              setCombo(c => c + 1);
+              
+              setTimeout(() => {
+                const newMatches = findMatches(state);
+                if (newMatches.size > 0) {
+                  clearMatches(state);
+                } else {
+                  setCombo(0);
+                }
+              }, 100);
+              
+              return true;
+            }
+            
+            setCombo(0);
+            return false;
+          };
+
+          const applyGravity = (state) => {
+            for (let col = 0; col < COLS; col++) {
+              let writeRow = ROWS - 1;
+              
+              for (let row = ROWS - 1; row >= 0; row--) {
+                if (state.board[row][col] !== null) {
+                  if (row !== writeRow) {
+                    state.board[writeRow][col] = state.board[row][col];
+                    state.board[row][col] = null;
+                  }
+                  writeRow--;
+                }
+              }
+            }
+          };
+
+          const clearFullLines = (state) => {
+            let linesCleared = 0;
+            
+            for (let row = ROWS - 1; row >= 0; row--) {
+              if (state.board[row].every(cell => cell !== null)) {
+                state.board.splice(row, 1);
+                state.board.unshift(Array(COLS).fill(null));
+                linesCleared++;
+                setScore(s => s + 500 * level);
+                row++;
+              }
+            }
+            
+            return linesCleared;
+          };
+
+          const spawnPiece = (state) => {
+            const piece = createPiece();
+            state.currentPiece = piece.shape;
+            state.pieceColors = piece.colors;
+            
+            state.currentX = Math.floor(COLS / 2) - Math.floor(state.currentPiece[0].length / 2);
+            state.currentY = 0;
+            
+            if (checkCollision(state, state.currentPiece, state.currentX, state.currentY)) {
+              setGameOver(true);
+              return false;
+            }
+            return true;
+          };
+
+          const drop = (state) => {
+            state.currentY++;
+            if (checkCollision(state, state.currentPiece, state.currentX, state.currentY)) {
+              state.currentY--;
+              mergePiece(state);
+              
+              const hasMatches = clearMatches(state);
+              clearFullLines(state);
+              
+              spawnPiece(state);
+            }
+          };
+
+          const moveLeft = () => {
+            const state = gameState.current;
+            if (!state.currentPiece || gameOver) return;
+            
+            state.currentX--;
+            if (checkCollision(state, state.currentPiece, state.currentX, state.currentY)) {
+              state.currentX++;
+            }
+          };
+
+          const moveRight = () => {
+            const state = gameState.current;
+            if (!state.currentPiece || gameOver) return;
+            
+            state.currentX++;
+            if (checkCollision(state, state.currentPiece, state.currentX, state.currentY)) {
+              state.currentX--;
+            }
+          };
+
+          const hardDrop = () => {
+            const state = gameState.current;
+            if (!state.currentPiece || gameOver) return;
+            
+            while (!checkCollision(state, state.currentPiece, state.currentX, state.currentY + 1)) {
+              state.currentY++;
+              setScore(s => s + 2);
+            }
+            drop(state);
+          };
+
+          const rotatePiece = () => {
+            const state = gameState.current;
+            if (!state.currentPiece || gameOver) return;
+            
+            const rotated = rotate(state.currentPiece);
+            const rotatedColors = rotate(state.pieceColors);
+            
+            if (!checkCollision(state, rotated, state.currentX, state.currentY)) {
+              state.currentPiece = rotated;
+              state.pieceColors = rotatedColors;
+            } else {
+              if (!checkCollision(state, rotated, state.currentX - 1, state.currentY)) {
+                state.currentPiece = rotated;
+                state.pieceColors = rotatedColors;
+                state.currentX--;
+              } else if (!checkCollision(state, rotated, state.currentX + 1, state.currentY)) {
+                state.currentPiece = rotated;
+                state.pieceColors = rotatedColors;
+                state.currentX++;
+              }
+            }
+          };
+
+          const spawnViruses = (state, count) => {
+            for (let i = 0; i < count; i++) {
+              let placed = false;
+              let attempts = 0;
+              
+              while (!placed && attempts < 50) {
+                const row = Math.floor(ROWS * 0.7) + Math.floor(Math.random() * (ROWS * 0.3));
+                const col = Math.floor(Math.random() * COLS);
                 
-                // Head - closer to body
-                ctx.fillStyle = '#E0E0E0';
+                if (state.board[row][col] === null) {
+                  state.board[row][col] = COLORS[Math.floor(Math.random() * COLORS.length)];
+                  placed = true;
+                  state.virusCount++;
+                }
+                attempts++;
+              }
+            }
+          };
+
+          useEffect(() => {
+            if (!gameStarted || gameOver) return;
+
+            const canvas = canvasRef.current;
+            const ctx = canvas.getContext('2d');
+            const state = gameState.current;
+
+            canvas.width = COLS * BLOCK_SIZE;
+            canvas.height = ROWS * BLOCK_SIZE;
+
+            // Scale canvas to fit small screens like Apple Watch
+            const maxW = window.innerWidth - 10;
+            const maxH = window.innerHeight - 80;
+            const scaleX = maxW / (COLS * BLOCK_SIZE);
+            const scaleY = maxH / (ROWS * BLOCK_SIZE);
+            const scale = Math.min(scaleX, scaleY, 1);
+            canvas.style.width = (COLS * BLOCK_SIZE * scale) + 'px';
+            canvas.style.height = (ROWS * BLOCK_SIZE * scale) + 'px';
+
+            spawnViruses(state, 5 + level * 2);
+            spawnPiece(state);
+            state.dropInterval = Math.max(100, 800 - (level - 1) * 80);
+
+            const drawBlock = (x, y, color) => {
+              ctx.fillStyle = color;
+              ctx.fillRect(x * BLOCK_SIZE + 2, y * BLOCK_SIZE + 2, BLOCK_SIZE - 4, BLOCK_SIZE - 4);
+              
+              ctx.strokeStyle = '#000';
+              ctx.lineWidth = 2;
+              ctx.strokeRect(x * BLOCK_SIZE + 2, y * BLOCK_SIZE + 2, BLOCK_SIZE - 4, BLOCK_SIZE - 4);
+              
+              ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+              ctx.fillRect(x * BLOCK_SIZE + 4, y * BLOCK_SIZE + 4, BLOCK_SIZE - 8, (BLOCK_SIZE - 8) / 3);
+            };
+
+            const gameLoop = (timestamp) => {
+              const deltaTime = timestamp - state.lastTime;
+              state.lastTime = timestamp;
+              state.dropCounter += deltaTime;
+
+              if (state.dropCounter > state.dropInterval) {
+                drop(state);
+                state.dropCounter = 0;
+              }
+
+              ctx.fillStyle = '#000';
+              ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+              ctx.strokeStyle = '#222';
+              ctx.lineWidth = 1;
+              for (let i = 0; i <= COLS; i++) {
                 ctx.beginPath();
-                ctx.arc(0, -size * 0.3 + crouchOffset, size * 0.45, 0, Math.PI * 2);
-                ctx.fill();
+                ctx.moveTo(i * BLOCK_SIZE, 0);
+                ctx.lineTo(i * BLOCK_SIZE, canvas.height);
+                ctx.stroke();
+              }
+              for (let i = 0; i <= ROWS; i++) {
+                ctx.beginPath();
+                ctx.moveTo(0, i * BLOCK_SIZE);
+                ctx.lineTo(canvas.width, i * BLOCK_SIZE);
+                ctx.stroke();
+              }
+
+              const matches = findMatches(state);
+
+              for (let row = 0; row < ROWS; row++) {
+                for (let col = 0; col < COLS; col++) {
+                  if (state.board[row][col]) {
+                    const isMatch = matches.has(`${row}-${col}`);
+                    
+                    if (isMatch) {
+                      const flash = Math.sin(timestamp / 100) * 0.5 + 0.5;
+                      ctx.globalAlpha = 0.5 + flash * 0.5;
+                    }
+                    
+                    drawBlock(col, row, state.board[row][col]);
+                    ctx.globalAlpha = 1;
+                  }
+                }
+              }
+
+              if (state.currentPiece) {
+                let ghostY = state.currentY;
+                while (!checkCollision(state, state.currentPiece, state.currentX, ghostY + 1)) {
+                  ghostY++;
+                }
                 
-                // Shorter ears pointing up
-                ctx.fillStyle = '#D3D3D3';
-                ctx.beginPath();
-                ctx.ellipse(-size * 0.18, -size * 0.75 + crouchOffset * 0.5, size * 0.12, size * 0.35, -0.15, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.ellipse(size * 0.18, -size * 0.75 + crouchOffset * 0.5, size * 0.12, size * 0.35, 0.15, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Pink inner ears - smaller
-                ctx.fillStyle = '#FFB6C1';
-                ctx.beginPath();
-                ctx.ellipse(-size * 0.18, -size * 0.75 + crouchOffset * 0.5, size * 0.06, size * 0.2, -0.15, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.ellipse(size * 0.18, -size * 0.75 + crouchOffset * 0.5, size * 0.06, size * 0.2, 0.15, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Compact front legs
-                ctx.fillStyle = '#D3D3D3';
-                ctx.beginPath();
-                ctx.ellipse(-size * 0.25, size * 0.3 + crouchOffset, size * 0.12, size * 0.2, 0.2, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.ellipse(size * 0.25, size * 0.3 + crouchOffset, size * 0.12, size * 0.2, -0.2, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Smaller back feet
-                ctx.fillStyle = '#C0C0C0';
-                ctx.beginPath();
-                ctx.ellipse(-size * 0.35, size * 0.55 + crouchOffset, size * 0.28, size * 0.15, 0, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.ellipse(size * 0.35, size * 0.55 + crouchOffset, size * 0.28, size * 0.15, 0, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Eyes
-                ctx.fillStyle = '#000';
-                ctx.beginPath();
-                ctx.arc(-size * 0.13, -size * 0.35 + crouchOffset, size * 0.07, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(size * 0.13, -size * 0.35 + crouchOffset, size * 0.07, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Nose
-                ctx.fillStyle = '#FFC0CB';
-                ctx.beginPath();
-                ctx.arc(0, -size * 0.15 + crouchOffset, size * 0.08, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Small cotton tail
-                ctx.fillStyle = '#FFF';
-                ctx.beginPath();
-                ctx.arc(0, size * 0.5 + crouchOffset, size * 0.2, 0, Math.PI * 2);
-                ctx.fill();
-                
-            } else if (selectedAnimal === 'deer') {
-                // Deer body - lean and muscular
-                ctx.fillStyle = '#8B4513';
-                ctx.beginPath();
-                ctx.ellipse(0, crouchOffset, size * 0.7, size * 1.0, 0, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Chest (lighter brown)
-                ctx.fillStyle = '#D2691E';
-                ctx.beginPath();
-                ctx.ellipse(0, crouchOffset * 0.3, size * 0.45, size * 0.6, 0, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Head - sleek
-                ctx.fillStyle = '#8B4513';
-                ctx.beginPath();
-                ctx.ellipse(0, -size * 0.8 + crouchOffset, size * 0.4, size * 0.5, 0, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Antlers
-                ctx.strokeStyle = '#654321';
+                for (let row = 0; row < state.currentPiece.length; row++) {
+                  for (let col = 0; col < state.currentPiece[row].length; col++) {
+                    if (state.currentPiece[row][col]) {
+                      ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+                      ctx.fillRect(
+                        (state.currentX + col) * BLOCK_SIZE + 2,
+                        (ghostY + row) * BLOCK_SIZE + 2,
+                        BLOCK_SIZE - 4,
+                        BLOCK_SIZE - 4
+                      );
+                    }
+                  }
+                }
+              }
+
+              if (state.currentPiece && state.pieceColors) {
+                for (let row = 0; row < state.currentPiece.length; row++) {
+                  for (let col = 0; col < state.currentPiece[row].length; col++) {
+                    if (state.currentPiece[row][col]) {
+                      drawBlock(
+                        state.currentX + col, 
+                        state.currentY + row, 
+                        state.pieceColors[row][col]
+                      );
+                    }
+                  }
+                }
+              }
+
+              if (combo > 0) {
+                ctx.fillStyle = '#ff0';
+                ctx.font = 'bold 20px Arial';
+                ctx.textAlign = 'center';
+                ctx.strokeStyle = '#000';
                 ctx.lineWidth = 3;
-                ctx.beginPath();
-                // Left antler
-                ctx.moveTo(-size * 0.3, -size * 1.2 + crouchOffset * 0.5);
-                ctx.lineTo(-size * 0.4, -size * 1.6 + crouchOffset * 0.5);
-                ctx.moveTo(-size * 0.35, -size * 1.4 + crouchOffset * 0.5);
-                ctx.lineTo(-size * 0.5, -size * 1.5 + crouchOffset * 0.5);
-                // Right antler
-                ctx.moveTo(size * 0.3, -size * 1.2 + crouchOffset * 0.5);
-                ctx.lineTo(size * 0.4, -size * 1.6 + crouchOffset * 0.5);
-                ctx.moveTo(size * 0.35, -size * 1.4 + crouchOffset * 0.5);
-                ctx.lineTo(size * 0.5, -size * 1.5 + crouchOffset * 0.5);
-                ctx.stroke();
-                
-                // Long muscular legs
-                ctx.fillStyle = '#A0522D';
-                ctx.fillRect(-size * 0.4, size * 0.4 + crouchOffset, size * 0.15, size * 0.8);
-                ctx.fillRect(size * 0.25, size * 0.4 + crouchOffset, size * 0.15, size * 0.8);
-                
-                // Hooves
-                ctx.fillStyle = '#000';
-                ctx.fillRect(-size * 0.4, size * 1.15 + crouchOffset, size * 0.15, size * 0.15);
-                ctx.fillRect(size * 0.25, size * 1.15 + crouchOffset, size * 0.15, size * 0.15);
-                
-                // Eyes
-                ctx.fillStyle = '#000';
-                ctx.beginPath();
-                ctx.arc(-size * 0.1, -size * 0.85 + crouchOffset, size * 0.08, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(size * 0.1, -size * 0.85 + crouchOffset, size * 0.08, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Nose
-                ctx.fillStyle = '#000';
-                ctx.beginPath();
-                ctx.arc(0, -size * 0.55 + crouchOffset, size * 0.1, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // White tail
-                ctx.fillStyle = '#FFF';
-                ctx.beginPath();
-                ctx.moveTo(0, size * 1.0 + crouchOffset);
-                ctx.lineTo(-size * 0.15, size * 1.2 + crouchOffset);
-                ctx.lineTo(size * 0.15, size * 1.2 + crouchOffset);
-                ctx.closePath();
-                ctx.fill();
-                
-            } else if (selectedAnimal === 'coyote') {
-                // Coyote body - predator stance
-                ctx.fillStyle = '#C19A6B';
-                ctx.beginPath();
-                ctx.ellipse(0, crouchOffset, size * 0.7, size * 0.95, 0, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Underbelly (lighter)
-                ctx.fillStyle = '#E8D5B9';
-                ctx.beginPath();
-                ctx.ellipse(0, crouchOffset * 0.5, size * 0.4, size * 0.6, 0, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Head - wolf-like
-                ctx.fillStyle = '#C19A6B';
-                ctx.beginPath();
-                ctx.ellipse(0, -size * 0.75 + crouchOffset, size * 0.5, size * 0.55, 0, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Snout
-                ctx.fillStyle = '#A0826D';
-                ctx.beginPath();
-                ctx.ellipse(0, -size * 0.4 + crouchOffset, size * 0.25, size * 0.3, 0, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Pointed ears
-                ctx.fillStyle = '#C19A6B';
-                ctx.beginPath();
-                ctx.moveTo(-size * 0.35, -size * 1.1 + crouchOffset * 0.5);
-                ctx.lineTo(-size * 0.5, -size * 1.5 + crouchOffset * 0.5);
-                ctx.lineTo(-size * 0.2, -size * 1.0 + crouchOffset * 0.5);
-                ctx.closePath();
-                ctx.fill();
-                ctx.beginPath();
-                ctx.moveTo(size * 0.35, -size * 1.1 + crouchOffset * 0.5);
-                ctx.lineTo(size * 0.5, -size * 1.5 + crouchOffset * 0.5);
-                ctx.lineTo(size * 0.2, -size * 1.0 + crouchOffset * 0.5);
-                ctx.closePath();
-                ctx.fill();
-                
-                // Inner ears (darker)
-                ctx.fillStyle = '#8B7355';
-                ctx.beginPath();
-                ctx.moveTo(-size * 0.35, -size * 1.1 + crouchOffset * 0.5);
-                ctx.lineTo(-size * 0.45, -size * 1.4 + crouchOffset * 0.5);
-                ctx.lineTo(-size * 0.28, -size * 1.05 + crouchOffset * 0.5);
-                ctx.closePath();
-                ctx.fill();
-                ctx.beginPath();
-                ctx.moveTo(size * 0.35, -size * 1.1 + crouchOffset * 0.5);
-                ctx.lineTo(size * 0.45, -size * 1.4 + crouchOffset * 0.5);
-                ctx.lineTo(size * 0.28, -size * 1.05 + crouchOffset * 0.5);
-                ctx.closePath();
-                ctx.fill();
-                
-                // Legs - strong and ready to pounce
-                ctx.fillStyle = '#A0826D';
-                ctx.fillRect(-size * 0.4, size * 0.5 + crouchOffset, size * 0.15, size * 0.7);
-                ctx.fillRect(size * 0.25, size * 0.5 + crouchOffset, size * 0.15, size * 0.7);
-                
-                // Paws
-                ctx.fillStyle = '#654321';
-                ctx.beginPath();
-                ctx.ellipse(-size * 0.325, size * 1.15 + crouchOffset, size * 0.12, size * 0.1, 0, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.ellipse(size * 0.325, size * 1.15 + crouchOffset, size * 0.12, size * 0.1, 0, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Eyes - intense yellow
-                ctx.fillStyle = '#FFD700';
-                ctx.beginPath();
-                ctx.arc(-size * 0.15, -size * 0.8 + crouchOffset, size * 0.1, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(size * 0.15, -size * 0.8 + crouchOffset, size * 0.1, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Pupils
-                ctx.fillStyle = '#000';
-                ctx.beginPath();
-                ctx.arc(-size * 0.15, -size * 0.8 + crouchOffset, size * 0.05, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(size * 0.15, -size * 0.8 + crouchOffset, size * 0.05, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Black nose
-                ctx.fillStyle = '#000';
-                ctx.beginPath();
-                ctx.arc(0, -size * 0.25 + crouchOffset, size * 0.1, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Bushy tail
-                ctx.fillStyle = '#C19A6B';
-                ctx.beginPath();
-                ctx.ellipse(0, size * 1.1 + crouchOffset, size * 0.3, size * 0.35, 0.3, 0, Math.PI * 2);
-                ctx.fill();
-                // Tail tip (darker)
-                ctx.fillStyle = '#654321';
-                ctx.beginPath();
-                ctx.ellipse(size * 0.1, size * 1.3 + crouchOffset, size * 0.15, size * 0.2, 0.5, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            
-            // Sprint glow effect
-            if (sprintActive) {
-                ctx.strokeStyle = '#FFD700';
-                ctx.lineWidth = 4;
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = '#FFD700';
-                ctx.beginPath();
-                ctx.arc(0, 0, size * 1.3, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.shadowBlur = 0;
-            }
-            
-            ctx.restore();
+                ctx.strokeText(`${combo}x COMBO!`, canvas.width / 2, 30);
+                ctx.fillText(`${combo}x COMBO!`, canvas.width / 2, 30);
+              }
+
+              if (!gameOver) {
+                state.animationId = requestAnimationFrame(gameLoop);
+              }
+            };
+
+            const handleKeyDown = (e) => {
+              if (gameOver) return;
+              
+              switch(e.key) {
+                case 'ArrowLeft':
+                  e.preventDefault();
+                  moveLeft();
+                  break;
+                case 'ArrowRight':
+                  e.preventDefault();
+                  moveRight();
+                  break;
+                case 'ArrowDown':
+                  e.preventDefault();
+                  drop(state);
+                  setScore(s => s + 1);
+                  break;
+                case 'ArrowUp':
+                case ' ':
+                  e.preventDefault();
+                  rotatePiece();
+                  break;
+              }
+            };
+
+            window.addEventListener('keydown', handleKeyDown);
+            state.animationId = requestAnimationFrame(gameLoop);
+
+            return () => {
+              window.removeEventListener('keydown', handleKeyDown);
+              if (state.animationId) {
+                cancelAnimationFrame(state.animationId);
+              }
+            };
+          }, [gameStarted, gameOver, level, combo]);
+
+          const startGame = () => {
+            setGameStarted(true);
+            setGameOver(false);
+            setScore(0);
+            setLevel(1);
+            setCombo(0);
+            gameState.current = {
+              board: Array(ROWS).fill(null).map(() => Array(COLS).fill(null)),
+              currentPiece: null,
+              currentX: 0,
+              currentY: 0,
+              pieceColors: null,
+              dropCounter: 0,
+              dropInterval: 800,
+              lastTime: 0,
+              virusCount: 0,
+              animationId: null
+            };
+          };
+
+          return (
+            <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'flex-start',minHeight:'100vh',background:'linear-gradient(to bottom, #312e81, #581c87, #831843)',padding:'4px',overflow:'hidden',boxSizing:'border-box'}}>
+              
+              {!gameStarted && !gameOver && (
+                <div style={{textAlign:'center',padding:'8px'}}>
+                  <div style={{fontSize:'14px',fontWeight:'bold',color:'white',marginBottom:'4px'}}>💊 TETRIS+MARIO</div>
+                  <button
+                    onClick={startGame}
+                    style={{background:'linear-gradient(to right, #3b82f6, #8b5cf6)',color:'white',fontWeight:'bold',padding:'8px 16px',borderRadius:'8px',fontSize:'14px',border:'none',cursor:'pointer',marginBottom:'8px'}}
+                  >
+                    ▶ Start
+                  </button>
+                  <div style={{color:'#d1d5db',fontSize:'10px',lineHeight:'1.4'}}>
+                    <p>Match 4+ same colors!</p>
+                    <p>Clear lines for points!</p>
+                  </div>
+                </div>
+              )}
+
+              {gameStarted && (
+                <div style={{display:'flex',flexDirection:'column',alignItems:'center',width:'100%'}}>
+                  
+                  {/* Compact score bar */}
+                  <div style={{display:'flex',gap:'8px',background:'rgba(31,41,55,0.9)',borderRadius:'6px',padding:'2px 8px',marginBottom:'2px',fontSize:'10px',color:'white'}}>
+                    <span>⭐{score}</span>
+                    <span>Lv{level}</span>
+                    {combo > 0 && <span style={{color:'#fb923c'}}>x{combo}</span>}
+                  </div>
+
+                  {/* Game canvas - scales to fit watch */}
+                  <canvas
+                    ref={canvasRef}
+                    style={{border:'2px solid #8b5cf6',borderRadius:'4px',background:'black',maxWidth:'100%',maxHeight:'calc(100vh - 80px)'}}
+                  />
+
+                  {/* Fixed compact controls at bottom */}
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'3px',width:'100%',maxWidth:'160px',marginTop:'3px'}}>
+                    <div></div>
+                    <button onClick={rotatePiece} style={{background:'#7c3aed',color:'white',fontWeight:'bold',padding:'6px',borderRadius:'6px',fontSize:'12px',border:'none',cursor:'pointer'}}>🔄</button>
+                    <div></div>
+                    <button onClick={moveLeft} style={{background:'#2563eb',color:'white',fontWeight:'bold',padding:'6px',borderRadius:'6px',fontSize:'14px',border:'none',cursor:'pointer'}}>←</button>
+                    <button onClick={hardDrop} style={{background:'#dc2626',color:'white',fontWeight:'bold',padding:'6px',borderRadius:'6px',fontSize:'12px',border:'none',cursor:'pointer'}}>⬇</button>
+                    <button onClick={moveRight} style={{background:'#2563eb',color:'white',fontWeight:'bold',padding:'6px',borderRadius:'6px',fontSize:'14px',border:'none',cursor:'pointer'}}>→</button>
+                  </div>
+
+                </div>
+              )}
+
+              {gameOver && (
+                <div style={{position:'fixed',top:'50%',left:'50%',transform:'translate(-50%,-50%)',textAlign:'center',background:'rgba(0,0,0,0.95)',padding:'16px',borderRadius:'10px',border:'2px solid #dc2626'}}>
+                  <div style={{fontSize:'16px',color:'#f87171',fontWeight:'bold',marginBottom:'6px'}}>💀 GAME OVER</div>
+                  <div style={{fontSize:'14px',color:'white',marginBottom:'2px'}}>Score: {score}</div>
+                  <div style={{fontSize:'12px',color:'#fbbf24',marginBottom:'8px'}}>Lv: {level}</div>
+                  <button
+                    onClick={startGame}
+                    style={{background:'linear-gradient(to right, #3b82f6, #8b5cf6)',color:'white',fontWeight:'bold',padding:'6px 14px',borderRadius:'8px',fontSize:'12px',border:'none',cursor:'pointer'}}
+                  >
+                    Play Again
+                  </button>
+                </div>
+              )}
+            </div>
+          );
         }
-        
-        function drawCars() {
-            cars.forEach(car => {
-                const x = car.x * gridSize;
-                const y = car.y * gridSize + 5;
-                const width = car.width * gridSize;
-                const height = gridSize - 10;
-                
-                ctx.fillStyle = car.color;
-                ctx.fillRect(x, y, width, height);
-                ctx.fillStyle = '#87CEEB';
-                ctx.fillRect(x + width * 0.2, y + 5, width * 0.6, height * 0.4);
-                ctx.fillStyle = '#000';
-                ctx.beginPath();
-                ctx.arc(x + width * 0.2, y + height - 3, 5, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(x + width * 0.8, y + height - 3, 5, 0, Math.PI * 2);
-                ctx.fill();
-            });
-        }
-        
-        function drawLogs() {
-            logs.forEach(log => {
-                const x = log.x * gridSize;
-                const y = log.y * gridSize + 5;
-                const width = log.width * gridSize;
-                const height = gridSize - 10;
-                
-                ctx.fillStyle = '#8B4513';
-                ctx.fillRect(x, y, width, height);
-                ctx.strokeStyle = '#654321';
-                ctx.lineWidth = 2;
-                for (let i = 1; i < log.width; i++) {
-                    ctx.beginPath();
-                    ctx.arc(x + i * gridSize - gridSize/2, y + height/2, height/3, 0, Math.PI * 2);
-                    ctx.stroke();
-                }
-            });
-        }
-        
-        function drawGoals() {
-            goals.forEach(goal => {
-                const x = goal.x * gridSize + gridSize / 2;
-                const y = 0 * gridSize + gridSize / 2;
-                
-                if (goal.reached) {
-                    ctx.fillStyle = '#90EE90';
-                    ctx.beginPath();
-                    ctx.arc(x, y, 15, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.font = '20px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.fillText(animalStats[selectedAnimal].emoji, x, y + 7);
-                } else {
-                    ctx.fillStyle = '#FF8C00';
-                    ctx.beginPath();
-                    ctx.moveTo(x, y - 10);
-                    ctx.lineTo(x - 5, y + 10);
-                    ctx.lineTo(x + 5, y + 10);
-                    ctx.closePath();
-                    ctx.fill();
-                    ctx.fillStyle = '#228B22';
-                    ctx.beginPath();
-                    ctx.moveTo(x - 3, y - 10);
-                    ctx.lineTo(x - 6, y - 15);
-                    ctx.lineTo(x - 2, y - 12);
-                    ctx.lineTo(x, y - 16);
-                    ctx.lineTo(x + 2, y - 12);
-                    ctx.lineTo(x + 6, y - 15);
-                    ctx.lineTo(x + 3, y - 10);
-                    ctx.closePath();
-                    ctx.fill();
-                }
-            });
-        }
-        
-        function moveCars() {
-            cars.forEach(car => {
-                car.x += car.speed * 0.05;
-                if (car.speed > 0 && car.x > cols + 2) car.x = -car.width;
-                else if (car.speed < 0 && car.x < -car.width - 2) car.x = cols;
-            });
-        }
-        
-        function moveLogs() {
-            logs.forEach(log => {
-                log.x += log.speed * 0.05;
-                if (log.speed > 0 && log.x > cols + 2) log.x = -log.width;
-                else if (log.speed < 0 && log.x < -log.width - 2) log.x = cols;
-            });
-        }
-        
-        function moveAnimal(dx, dy) {
-            // Update direction - only change for up/down movement
-            if (dy > 0) animal.direction = 'down';
-            else if (dy < 0) animal.direction = 'up';
-            // Keep facing up (north) for left/right movement
-            else if (dx !== 0 && animal.direction !== 'up' && animal.direction !== 'down') {
-                animal.direction = 'up';
-            }
-            
-            // Crouch animation
-            animal.crouching = true;
-            setTimeout(() => { animal.crouching = false; }, 150);
-            
-            const multiplier = sprintActive ? animalStats[selectedAnimal].sprint : 1;
-            const actualDx = dx * multiplier;
-            const actualDy = dy * multiplier;
-            
-            const newX = animal.x + actualDx;
-            const newY = animal.y + actualDy;
-            
-            if (newX >= 0 && newX < cols && newY >= 0 && newY < rows) {
-                animal.x = newX;
-                animal.y = newY;
-                
-                if (dy < 0) {
-                    score += 10;
-                    document.getElementById('score').textContent = 'SCORE: ' + score;
-                }
-            }
-            
-            if (sprintActive) {
-                sprintActive = false;
-                sprintCooldown = 60;
-            }
-        }
-        
-        function checkCollisions() {
-            const currentLane = lanes.find(lane => lane.y === Math.round(animal.y));
-            
-            if (currentLane && currentLane.type === 'water') {
-                let onLog = false;
-                logs.forEach(log => {
-                    if (Math.abs(log.y - animal.y) < 0.5) {
-                        const logLeft = log.x;
-                        const logRight = log.x + log.width;
-                        if (animal.x >= logLeft - 0.5 && animal.x <= logRight - 0.5) {
-                            onLog = true;
-                            animal.x += log.speed * 0.05;
-                            if (animal.x < 0) animal.x = 0;
-                            if (animal.x >= cols) animal.x = cols - 1;
-                        }
-                    }
-                });
-                if (!onLog) loseLife();
-            }
-            
-            if (currentLane && currentLane.type === 'road') {
-                cars.forEach(car => {
-                    if (Math.abs(car.y - animal.y) < 0.5) {
-                        const carLeft = car.x;
-                        const carRight = car.x + car.width;
-                        if (animal.x >= carLeft - 0.3 && animal.x <= carRight - 0.7) {
-                            loseLife();
-                        }
-                    }
-                });
-            }
-            
-            if (Math.round(animal.y) === 0) {
-                let reachedGoal = false;
-                goals.forEach(goal => {
-                    if (Math.abs(animal.x - goal.x) < 0.5 && !goal.reached) {
-                        goal.reached = true;
-                        score += 100;
-                        reachedGoal = true;
-                    }
-                });
-                
-                if (reachedGoal) {
-                    document.getElementById('score').textContent = 'SCORE: ' + score;
-                    if (goals.every(g => g.reached)) {
-                        nextLevel();
-                    } else {
-                        resetAnimal();
-                    }
-                } else {
-                    loseLife();
-                }
-            }
-        }
-        
-        function loseLife() {
-            lives--;
-            updateLives();
-            if (lives <= 0) endGame();
-            else resetAnimal();
-        }
-        
-        function resetAnimal() {
-            animal.x = 4;
-            animal.y = 14;
-        }
-        
-        function nextLevel() {
-            level++;
-            document.getElementById('level').textContent = 'LEVEL: ' + level;
-            score += 500;
-            document.getElementById('score').textContent = 'SCORE: ' + score;
-            goals.forEach(g => g.reached = false);
-            resetAnimal();
-            initLevel();
-        }
-        
-        function updateLives() {
-            const hearts = '❤️'.repeat(lives);
-            document.getElementById('lives').textContent = 'LIVES: ' + hearts;
-        }
-        
-        function endGame() {
-            gameRunning = false;
-            document.getElementById('finalScore').textContent = score;
-            document.getElementById('finalLevel').textContent = level;
-            document.getElementById('gameOver').classList.add('show');
-        }
-        
-        function gameLoop() {
-            if (!gameRunning) return;
-            
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            drawBackground();
-            drawGoals();
-            drawLogs();
-            drawCars();
-            drawAnimal();
-            
-            moveCars();
-            moveLogs();
-            checkCollisions();
-            
-            if (sprintCooldown > 0) sprintCooldown--;
-            
-            requestAnimationFrame(gameLoop);
-        }
-        
-        // Controls
-        function hop(dx, dy) {
-            moveAnimal(dx, dy);
-        }
-        
-        function activateSprint() {
-            if (sprintCooldown === 0) {
-                sprintActive = true;
-            }
-        }
-        
-        document.getElementById('upBtn').addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            hop(0, -1);
-        });
-        document.getElementById('downBtn').addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            hop(0, 1);
-        });
-        document.getElementById('leftBtn').addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            hop(-1, 0);
-        });
-        document.getElementById('rightBtn').addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            hop(1, 0);
-        });
-        document.getElementById('sprintBtn').addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            activateSprint();
-        });
-        
-        document.getElementById('upBtn').addEventListener('click', () => hop(0, -1));
-        document.getElementById('downBtn').addEventListener('click', () => hop(0, 1));
-        document.getElementById('leftBtn').addEventListener('click', () => hop(-1, 0));
-        document.getElementById('rightBtn').addEventListener('click', () => hop(1, 0));
-        document.getElementById('sprintBtn').addEventListener('click', activateSprint);
-        
-        document.addEventListener('keydown', (e) => {
-            switch(e.key) {
-                case 'ArrowUp': e.preventDefault(); hop(0, -1); break;
-                case 'ArrowDown': e.preventDefault(); hop(0, 1); break;
-                case 'ArrowLeft': e.preventDefault(); hop(-1, 0); break;
-                case 'ArrowRight': e.preventDefault(); hop(1, 0); break;
-                case ' ': e.preventDefault(); activateSprint(); break;
-            }
-        });
-        
-        document.getElementById('restartBtn').addEventListener('click', () => {
-            location.reload();
-        });
+
+        // Render the game
+        ReactDOM.render(<TetrisMarioGame />, document.getElementById('root'));
     </script>
 </body>
 </html>
